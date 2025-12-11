@@ -5,10 +5,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -76,18 +80,40 @@ fun RecipeDetailScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Missing Ingredients",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onErrorContainer
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            recipe.missingIngredients.forEach { ingredient ->
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer
+                                )
                                 Text(
-                                    text = "• $ingredient",
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    text = "Missing Ingredients",
+                                    style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            recipe.missingIngredients.forEach { ingredient ->
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.Top,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Warning,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Text(
+                                        text = ingredient,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                }
                             }
                         }
                     }
@@ -100,15 +126,26 @@ fun RecipeDetailScreen(
                     text = "Ingredients",
                     style = MaterialTheme.typography.titleLarge
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
             itemsIndexed(recipe.ingredients) { _, ingredient ->
-                Text(
-                    text = "• $ingredient",
-                    style = MaterialTheme.typography.bodyMedium,
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.Top,
                     modifier = Modifier.padding(vertical = 4.dp)
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = ingredient,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
 
             item {
@@ -117,25 +154,40 @@ fun RecipeDetailScreen(
                     text = "Instructions",
                     style = MaterialTheme.typography.titleLarge
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
             itemsIndexed(recipe.instructions) { index, instruction ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
+                        .padding(vertical = 6.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Row(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "${index + 1}.",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(end = 12.dp)
-                        )
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Surface(
+                            shape = MaterialTheme.shapes.small,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Text(
+                                    text = "${index + 1}",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
                         Text(
                             text = instruction,
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
@@ -158,22 +210,34 @@ fun RecipeHeader(recipe: Recipe) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AssistChip(
                     onClick = {},
-                    label = { Text("${recipe.cookingTimeMinutes} min") }
+                    label = { Text("⏱ ${recipe.cookingTimeMinutes} min") }
                 )
                 AssistChip(
                     onClick = {},
-                    label = { Text(recipe.difficulty.displayName) }
+                    label = {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(recipe.difficulty.displayName)
+                        }
+                    }
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AssistChip(
                     onClick = {},
-                    label = { Text("${recipe.servings} servings") }
+                    label = { Text("🍽 ${recipe.servings} servings") }
                 )
                 AssistChip(
                     onClick = {},
-                    label = { Text(recipe.cuisineType.displayName) }
+                    label = { Text("🌍 ${recipe.cuisineType.displayName}") }
                 )
             }
         }
@@ -192,7 +256,7 @@ fun RecipeHeader(recipe: Recipe) {
     }
 
     if (recipe.dietaryRestrictions.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "Dietary: ${recipe.dietaryRestrictions.joinToString(", ") { it.displayName }}",
             style = MaterialTheme.typography.bodySmall,

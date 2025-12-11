@@ -11,7 +11,7 @@ import org.json.JSONObject
 
 class GeminiService {
     // Try gemini-1.5-flash-latest first, fallback to gemini-pro if needed
-    private val modelName = "gemini-2.5-flash" // Alternative: "gemini-pro", "gemini-1.5-pro-latest"
+    private val modelName = "gemini-robotics-er-1.5-preview" // Alternative: "gemini-pro", "gemini-1.5-pro-latest"
 
     private val generativeModel = GenerativeModel(
         modelName = modelName,
@@ -70,10 +70,15 @@ class GeminiService {
             $timeText
             $difficultyText
 
+            IMPORTANT RECIPE GENERATION ORDER:
+            1. FIRST: Generate at least 1 recipe that uses ONLY the available ingredients (no additional ingredients needed) if possible
+            2. THEN: Generate additional recipes that may need up to $maxMissingIngredients extra ingredients
+            3. This ensures users always see what they can make right now before seeing recipes requiring shopping
+
             For each recipe:
-            1. You can use ALL the available ingredients
-            2. You can suggest recipes that need up to $maxMissingIngredients additional ingredients not in the list
-            3. Clearly indicate which additional ingredients are needed (if any)
+            - You can use some or all of the available ingredients
+            - Clearly indicate which additional ingredients are needed in the "missingIngredients" field
+            - If a recipe uses only available ingredients, leave "missingIngredients" as an empty array []
 
             Return ONLY a valid JSON array with this exact structure (no markdown, no code blocks, just pure JSON):
             [
@@ -87,13 +92,14 @@ class GeminiService {
                 "difficulty": "EASY|MEDIUM|HARD",
                 "cuisineType": "ITALIAN|CHINESE|MEXICAN|etc",
                 "dietaryRestrictions": ["VEGETARIAN", "GLUTEN_FREE"],
-                "missingIngredients": ["ingredient not in available list"]
+                "missingIngredients": []
               }
             ]
 
             Important:
             - Return ONLY valid JSON, no additional text
-            - Include recipes with 0, 1, or 2 missing ingredients to show variety
+            - PRIORITIZE generating at least 1 recipe with missingIngredients: [] (can make now)
+            - Then include recipes with 1 or 2 missing ingredients for variety
             - Make ingredients list specific with quantities (e.g., "2 cups rice", "3 tomatoes")
             - Keep instructions CONCISE - 4-6 steps maximum per recipe
             - Keep descriptions brief - 1-2 sentences maximum
@@ -121,7 +127,14 @@ class GeminiService {
                 recipe?.let { recipes.add(it) }
             }
 
-            return recipes
+            // Sort recipes: exact matches first, then by number of missing ingredients
+            return recipes.sortedBy { recipe ->
+                when (recipe.matchType) {
+                    RecipeMatchType.EXACT_MATCH -> 0
+                    RecipeMatchType.NEEDS_ONE_EXTRA -> 1
+                    RecipeMatchType.NEEDS_TWO_EXTRA -> 2
+                }
+            }
         } catch (e: Exception) {
             throw Exception("Failed to parse recipes: ${e.message}")
         }

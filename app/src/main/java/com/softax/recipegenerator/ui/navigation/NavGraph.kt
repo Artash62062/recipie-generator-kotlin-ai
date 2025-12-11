@@ -1,6 +1,7 @@
 package com.softax.recipegenerator.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -46,8 +47,11 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.RecipeDetail.route) {
+            val recipesBackStackEntry = remember {
+                navController.getBackStackEntry(Screen.Recipes.route)
+            }
             val sharedViewModel: RecipeViewModel = viewModel(
-                viewModelStoreOwner = navController.getBackStackEntry(Screen.Recipes.route)
+                viewModelStoreOwner = recipesBackStackEntry
             )
             RecipeDetailScreen(
                 viewModel = sharedViewModel,

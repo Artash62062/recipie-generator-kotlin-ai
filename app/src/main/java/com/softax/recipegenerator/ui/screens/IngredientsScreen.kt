@@ -6,7 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -108,7 +110,7 @@ fun IngredientItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable(onClick = onToggle),
         colors = CardDefaults.cardColors(
             containerColor = if (ingredient.isAvailable) {
@@ -116,7 +118,8 @@ fun IngredientItem(
             } else {
                 MaterialTheme.colorScheme.surfaceVariant
             }
-        )
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -125,17 +128,36 @@ fun IngredientItem(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = ingredient.name,
-                    style = MaterialTheme.typography.titleMedium
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (ingredient.isAvailable) {
+                        Icons.Default.CheckCircle
+                    } else {
+                        Icons.Default.ShoppingCart
+                    },
+                    contentDescription = null,
+                    tint = if (ingredient.isAvailable) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
                 )
-                if (ingredient.quantity.isNotEmpty() || ingredient.unit.isNotEmpty()) {
+                Column {
                     Text(
-                        text = "${ingredient.quantity} ${ingredient.unit}".trim(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = ingredient.name,
+                        style = MaterialTheme.typography.titleMedium
                     )
+                    if (ingredient.quantity.isNotEmpty() || ingredient.unit.isNotEmpty()) {
+                        Text(
+                            text = "${ingredient.quantity} ${ingredient.unit}".trim(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
