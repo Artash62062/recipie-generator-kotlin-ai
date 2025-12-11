@@ -7,12 +7,16 @@ import androidx.room.RoomDatabase
 import com.softax.recipegenerator.data.model.Ingredient
 
 @Database(
-    entities = [Ingredient::class],
-    version = 1,
+    entities = [
+        Ingredient::class,
+        SavedRecipeEntity::class
+    ],
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ingredientDao(): IngredientDao
+    abstract fun savedRecipeDao(): SavedRecipeDao
 
     companion object {
         @Volatile
