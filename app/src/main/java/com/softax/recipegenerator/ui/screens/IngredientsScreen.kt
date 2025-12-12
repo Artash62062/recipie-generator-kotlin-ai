@@ -16,22 +16,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.softax.recipegenerator.data.model.Ingredient
+import com.softax.recipegenerator.ui.components.IngredientConfirmationDialog
 import com.softax.recipegenerator.ui.viewmodel.IngredientViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IngredientsScreen(
     viewModel: IngredientViewModel = viewModel(),
-    onNavigateToRecipes: () -> Unit
+    onNavigateToRecipes: () -> Unit,
+    onNavigateToCamera: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
+    var showConfirmationDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("My Ingredients") },
                 actions = {
+                    IconButton(onClick = onNavigateToCamera) {
+                        Text(
+                            text = "📷",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
                     Text(
                         text = "${uiState.availableCount} available",
                         modifier = Modifier.padding(end = 16.dp),
@@ -97,6 +106,71 @@ fun IngredientsScreen(
                     showAddDialog = false
                 }
             )
+        }
+
+        // Show confirmation dialog when ingredients are detected
+        if (showConfirmationDialog && uiState.detectedIngredients.isNotEmpty()) {
+            IngredientConfirmationDialog(
+                detectedIngredients = uiState.detectedIngredients,
+                onConfirm = { validIngredients ->
+                    viewModel.addMultipleIngredients(validIngredients)
+                    showConfirmationDialog = false
+                },
+                onDismiss = {
+                    viewModel.clearDetectedIngredients()
+                    showConfirmationDialog = false
+                }
+            )
+        }
+
+        // Show loading overlay during recognition
+        if (uiState.isRecognizing) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier.padding(32.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp)
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Analyzing image...")
+                        Text(
+                            "This may take a few seconds",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        // Show error if recognition failed
+        uiState.recognitionError?.let { error ->
+            AlertDialog(
+                onDismissRequest = { viewModel.clearDetectedIngredients() },
+                title = { Text("Recognition Failed") },
+                text = { Text(error) },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.clearDetectedIngredients() }) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+    }
+
+    // Auto-show confirmation dialog when ingredients are detected
+    LaunchedEffect(uiState.detectedIngredients) {
+        if (uiState.detectedIngredients.isNotEmpty()) {
+            showConfirmationDialog = true
         }
     }
 }

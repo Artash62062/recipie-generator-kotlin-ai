@@ -3,14 +3,17 @@ package com.softax.recipegenerator.ui.navigation
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.softax.recipegenerator.ui.screens.CameraScreen
 import com.softax.recipegenerator.ui.screens.IngredientsScreen
 import com.softax.recipegenerator.ui.screens.RecipeDetailScreen
 import com.softax.recipegenerator.ui.screens.RecipesScreen
 import com.softax.recipegenerator.ui.screens.SavedRecipesScreen
+import com.softax.recipegenerator.ui.viewmodel.IngredientViewModel
 import com.softax.recipegenerator.ui.viewmodel.RecipeViewModel
 
 sealed class Screen(val route: String) {
@@ -18,6 +21,7 @@ sealed class Screen(val route: String) {
     object Recipes : Screen("recipes")
     object RecipeDetail : Screen("recipe_detail")
     object SavedRecipes : Screen("saved_recipes")
+    object Camera : Screen("camera")
 }
 
 @SuppressLint("UnrememberedGetBackStackEntry")
@@ -27,10 +31,17 @@ fun NavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = Screen.Ingredients.route
     ) {
-        composable(Screen.Ingredients.route) {
+        composable(Screen.Ingredients.route) { backStackEntry ->
+            val ingredientViewModel: IngredientViewModel = viewModel(
+                viewModelStoreOwner = backStackEntry
+            )
             IngredientsScreen(
+                viewModel = ingredientViewModel,
                 onNavigateToRecipes = {
                     navController.navigate(Screen.Recipes.route)
+                },
+                onNavigateToCamera = {
+                    navController.navigate(Screen.Camera.route)
                 }
             )
         }
@@ -92,6 +103,31 @@ fun NavGraph(navController: NavHostController) {
                     // Select the recipe and navigate to detail
                     sharedViewModel.selectRecipe(recipe)
                     navController.navigate(Screen.RecipeDetail.route)
+                }
+            )
+        }
+
+        composable(Screen.Camera.route) {
+            // Get IngredientViewModel from Ingredients backstack entry
+            val ingredientsBackStackEntry = remember {
+                navController.getBackStackEntry(Screen.Ingredients.route)
+            }
+            val ingredientViewModel: IngredientViewModel = viewModel(
+                viewModelStoreOwner = ingredientsBackStackEntry
+            )
+            val context = LocalContext.current
+
+            CameraScreen(
+                onImageCaptured = { uri ->
+                    ingredientViewModel.recognizeIngredientsFromPhoto(uri, context)
+                    navController.popBackStack()
+                },
+                onError = { error ->
+                    ingredientViewModel.setRecognitionError(error)
+                    navController.popBackStack()
+                },
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }
