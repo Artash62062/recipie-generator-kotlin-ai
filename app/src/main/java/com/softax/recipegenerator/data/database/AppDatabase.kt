@@ -11,7 +11,7 @@ import com.softax.recipegenerator.data.model.Ingredient
         Ingredient::class,
         SavedRecipeEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,10 +30,17 @@ abstract class AppDatabase : RoomDatabase() {
                     "recipe_generator_database"
                 )
                     .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigrationOnDowngrade()
                     .build()
                 INSTANCE = instance
                 instance
             }
+        }
+
+        // Add a function to clear the instance for testing purposes
+        fun clearInstance() {
+            INSTANCE?.close()
+            INSTANCE = null
         }
     }
 }

@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
@@ -128,7 +130,8 @@ fun RecipesScreen(
                                 onClick = {
                                     viewModel.selectRecipe(recipe)
                                     onRecipeClick()
-                                }
+                                },
+                                viewModel = viewModel
                             )
                         }
                     }
@@ -150,8 +153,12 @@ fun RecipesScreen(
 @Composable
 fun RecipeCard(
     recipe: Recipe,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    viewModel: RecipeViewModel
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val isSaved = uiState.savedRecipeNames.contains(recipe.name)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -173,6 +180,15 @@ fun RecipeCard(
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
+                IconButton(
+                    onClick = { viewModel.saveRecipe(recipe) }
+                ) {
+                    Icon(
+                        imageVector = if (isSaved) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isSaved) "Saved" else "Save recipe",
+                        tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 AssistChip(
                     onClick = {},
                     label = { Text(recipe.matchType.displayName) },

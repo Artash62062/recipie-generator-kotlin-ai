@@ -7,6 +7,7 @@ import com.softax.recipegenerator.data.database.AppDatabase
 import com.softax.recipegenerator.data.model.*
 import com.softax.recipegenerator.data.repository.IngredientRepository
 import com.softax.recipegenerator.data.repository.RecipeRepository
+import com.softax.recipegenerator.data.repository.SavedRecipeRepository
 import com.softax.recipegenerator.data.service.GeminiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +19,8 @@ data class RecipeUiState(
     val filters: RecipeFilters = RecipeFilters(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val selectedRecipe: Recipe? = null
+    val selectedRecipe: Recipe? = null,
+    val savedRecipeNames: Set<String> = emptySet()
 )
 
 class RecipeViewModel(application: Application) : AndroidViewModel(application) {
@@ -26,9 +28,21 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
     private val ingredientRepository = IngredientRepository(database.ingredientDao())
     private val geminiService = GeminiService()
     private val recipeRepository = RecipeRepository(geminiService, ingredientRepository)
+    private val savedRecipeRepository = SavedRecipeRepository(database.savedRecipeDao())
 
     private val _uiState = MutableStateFlow(RecipeUiState())
     val uiState: StateFlow<RecipeUiState> = _uiState.asStateFlow()
+
+    init {
+        // Load saved recipe names to track which recipes are saved
+        viewModelScope.launch {
+            savedRecipeRepository.getAllSavedRecipes().collect { recipes ->
+                _uiState.value = _uiState.value.copy(
+                    savedRecipeNames = recipes.map { it.second.name }.toSet()
+                )
+            }
+        }
+    }
 
     fun generateRecipes() {
         viewModelScope.launch {
@@ -105,5 +119,24 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
     fun toggleShowNeedsTwoExtra() {
         val current = _uiState.value.filters
         updateFilters(current.copy(showNeedsTwoExtra = !current.showNeedsTwoExtra))
+    }
+
+    fun saveRecipe(recipe: Recipe) {
+        viewModelScope.launch {
+            savedRecipeRepository.saveRecipe(recipe).fold(
+                onSuccess = {
+                    // Recipe saved successfully - savedRecipeNames will update via Flow
+                },
+                onFailure = { error ->
+                    _uiState.value = _uiState.value.copy(
+                        errorMessage = "Failed to save recipe: ${error.message}"
+                    )
+                }
+            )
+        }
+    }
+
+    fun isRecipeSaved(recipeName: String): Boolean {
+        return _uiState.value.savedRecipeNames.contains(recipeName)
     }
 }

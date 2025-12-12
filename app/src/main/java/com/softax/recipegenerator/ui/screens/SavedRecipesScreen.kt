@@ -27,7 +27,7 @@ fun SavedRecipesScreen(
     var showFilterDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        topAppBar = {
+        topBar = {
             TopAppBar(
                 title = { Text("Saved Recipes") },
                 actions = {
@@ -42,7 +42,7 @@ fun SavedRecipesScreen(
                         expanded = showSortMenu,
                         onDismissRequest = { showSortMenu = false }
                     ) {
-                        SortOption.values().forEach { option ->
+                        SortOption.entries.forEach { option ->
                             DropdownMenuItem(
                                 text = { Text(option.displayName) },
                                 onClick = {
@@ -327,7 +327,7 @@ fun FilterDialog(
                     )
                 }
                 LazyColumn(modifier = Modifier.height(150.dp)) {
-                    items(CuisineType.values().filter { it != CuisineType.ANY }.chunked(2)) { row ->
+                    items(CuisineType.entries.filter { it != CuisineType.ANY }.chunked(2)) { row ->
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             row.forEach { cuisine ->
                                 FilterChip(
@@ -354,7 +354,7 @@ fun FilterDialog(
                         onClick = { onDifficultySelected(null) },
                         label = { Text("All") }
                     )
-                    DifficultyLevel.values().filter { it != DifficultyLevel.ANY }.forEach { difficulty ->
+                    DifficultyLevel.entries.filter { it != DifficultyLevel.ANY }.forEach { difficulty ->
                         FilterChip(
                             selected = currentDifficulty == difficulty,
                             onClick = { onDifficultySelected(difficulty) },

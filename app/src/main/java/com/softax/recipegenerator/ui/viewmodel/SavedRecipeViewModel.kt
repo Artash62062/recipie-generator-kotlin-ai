@@ -66,10 +66,11 @@ class SavedRecipeViewModel(application: Application) : AndroidViewModel(applicat
                         }
                     }
             } catch (e: Exception) {
+                e.printStackTrace()  // Print stack trace for debugging
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = "Failed to load saved recipes: ${e.message}"
+                        errorMessage = "Failed to load saved recipes: ${e.message}\n\nPlease clear app data in Settings > Apps > Recipe Generator > Storage > Clear Data"
                     )
                 }
             }
