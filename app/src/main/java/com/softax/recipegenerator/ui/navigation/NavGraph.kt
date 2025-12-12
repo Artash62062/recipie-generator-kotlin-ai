@@ -51,7 +51,6 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.RecipeDetail.route) { backStackEntry ->
-            // Try to get ViewModel from recipes route, or saved recipes route as fallback
             val viewModelBackStackEntry = remember(navController) {
                 try {
                     navController.getBackStackEntry(Screen.Recipes.route)

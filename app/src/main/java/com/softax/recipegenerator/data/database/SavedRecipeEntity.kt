@@ -11,25 +11,23 @@ data class SavedRecipeEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
-    // Recipe data (stored as primitives/strings for Room compatibility)
     val name: String,
     val description: String,
-    val ingredientsJson: String,  // List<String> serialized as JSON
-    val instructionsJson: String,  // List<String> serialized as JSON
+    val ingredientsJson: String,
+    val instructionsJson: String,
     val cookingTimeMinutes: Int,
     val servings: Int,
-    val difficulty: String,  // DifficultyLevel.name
-    val cuisineType: String,  // CuisineType.name
-    val dietaryRestrictionsJson: String,  // List<DietaryRestriction> serialized
-    val missingIngredientsJson: String,  // List<String> serialized
+    val difficulty: String,
+    val cuisineType: String,
+    val dietaryRestrictionsJson: String,
+    val missingIngredientsJson: String,
 
-    // Saved recipe metadata
-    val savedAt: Long,  // Timestamp in milliseconds
-    val notes: String = "",  // User's personal notes
-    val isFavorite: Boolean = false  // Optional favorite flag
+
+    val savedAt: Long,
+    val notes: String = "",
+    val isFavorite: Boolean = false
 )
 
-// Extension functions to convert between Recipe and SavedRecipeEntity
 private val gson = Gson()
 
 fun Recipe.toEntity(notes: String = "", savedAt: Long = System.currentTimeMillis()): SavedRecipeEntity {

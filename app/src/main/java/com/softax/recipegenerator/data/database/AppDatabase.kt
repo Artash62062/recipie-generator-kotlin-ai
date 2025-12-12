@@ -37,10 +37,5 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // Add a function to clear the instance for testing purposes
-        fun clearInstance() {
-            INSTANCE?.close()
-            INSTANCE = null
-        }
     }
 }

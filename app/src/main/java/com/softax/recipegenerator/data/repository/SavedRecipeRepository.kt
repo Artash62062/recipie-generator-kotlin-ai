@@ -14,13 +14,11 @@ import kotlinx.coroutines.withContext
 
 class SavedRecipeRepository(private val savedRecipeDao: SavedRecipeDao) {
 
-    // Get all saved recipes as Flow
     fun getAllSavedRecipes(): Flow<List<Pair<Int, Recipe>>> =
         savedRecipeDao.getAllSavedRecipes().map { entities ->
             entities.map { it.id to it.toRecipe() }
         }
 
-    // Search saved recipes
     fun searchSavedRecipes(query: String): Flow<List<Pair<Int, Recipe>>> =
         savedRecipeDao.searchSavedRecipes(query).map { entities ->
             entities.map { it.id to it.toRecipe() }
@@ -38,7 +36,7 @@ class SavedRecipeRepository(private val savedRecipeDao: SavedRecipeDao) {
             entities.map { it.id to it.toRecipe() }
         }
 
-    // Sort options
+    // Add in feature
     fun getSavedRecipesSortedByTime(): Flow<List<Pair<Int, Recipe>>> =
         savedRecipeDao.getSavedRecipesSortedByTime().map { entities ->
             entities.map { it.id to it.toRecipe() }

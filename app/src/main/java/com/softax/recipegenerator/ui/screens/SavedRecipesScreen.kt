@@ -66,7 +66,6 @@ fun SavedRecipesScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Search bar
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = { viewModel.setSearchQuery(it) },
@@ -85,7 +84,6 @@ fun SavedRecipesScreen(
                 singleLine = true
             )
 
-            // Active filters display
             if (uiState.filterCuisine != null || uiState.filterDifficulty != null) {
                 Row(
                     modifier = Modifier

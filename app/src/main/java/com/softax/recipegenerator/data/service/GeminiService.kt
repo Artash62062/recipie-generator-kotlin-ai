@@ -10,8 +10,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class GeminiService {
-    // Try gemini-1.5-flash-latest first, fallback to gemini-pro if needed
-    private val modelName = "gemini-robotics-er-1.5-preview" // Alternative: "gemini-pro", "gemini-1.5-pro-latest"
+
+    private val modelName = "gemini-robotics-er-1.5-preview"
 
     private val generativeModel = GenerativeModel(
         modelName = modelName,
@@ -20,7 +20,7 @@ class GeminiService {
             temperature = 0.7f
             topK = 40
             topP = 0.95f
-            maxOutputTokens = 8192  // Increased from 2048 to allow longer responses
+            maxOutputTokens = 8192
         }
     )
 
@@ -110,7 +110,7 @@ class GeminiService {
 
     private fun parseRecipesFromResponse(responseText: String): List<Recipe> {
         try {
-            // Clean response - remove markdown code blocks if present
+
             val cleanedText = responseText
                 .trim()
                 .removePrefix("```json")
@@ -127,7 +127,6 @@ class GeminiService {
                 recipe?.let { recipes.add(it) }
             }
 
-            // Sort recipes: exact matches first, then by number of missing ingredients
             return recipes.sortedBy { recipe ->
                 when (recipe.matchType) {
                     RecipeMatchType.EXACT_MATCH -> 0
@@ -171,7 +170,7 @@ class GeminiService {
                             DietaryRestriction.valueOf(dietaryArray.getString(i))
                         )
                     } catch (e: Exception) {
-                        // Skip invalid dietary restrictions
+
                     }
                 }
             }
